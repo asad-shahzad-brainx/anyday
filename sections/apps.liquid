@@ -6,6 +6,7 @@
     --button-margin-top: {{ section.settings.button_margin_top }}px;
     text-align: {{ section.settings.heading_alignment }};
     {%- render 'section-variables', section: section -%}
+    font-family: F37Jan;
   }
   .heading-wrapper {
     margin-bottom: var(--heading-margin-bottom);
@@ -17,6 +18,16 @@
   }
 </style>
 
+{% style %}
+  {% if request.page_type == 'product' and section.settings.enable_reviews_integration and section.blocks.size > 0 %}
+    @media (prefers-reduced-motion: no-preference) {
+      body {
+        scroll-behavior: smooth;
+      }
+    }
+  {% endif %}
+{% endstyle %}
+
 {%- if request.page_type == 'product' and section.settings.enable_reviews_integration -%}
   <noscript>{{ 'product-reviews.css' | asset_url | stylesheet_tag }}</noscript>
   <link rel="stylesheet" href="{{ 'product-reviews.css' | asset_url }}" media="print" fetchpriority="low" onload="this.media='all'">
@@ -24,7 +35,7 @@
 {%- endif -%}
 
 {%- if section.blocks.size > 0 -%}
-  <div class="section section--padding{% if section.settings.divider %} section--divider{% endif %}{% if section.settings.rounded %} section--rounded relative{% endif %}">
+  <div id="reviews-{{ product.id }}" class="section section--padding{% if section.settings.divider %} section--divider{% endif %}{% if section.settings.rounded %} section--rounded relative{% endif %}">
     <div class="page-width{% if section.settings.full_width %} page-width--full{% endif %} relative">
       
       <!-- Heading -->
