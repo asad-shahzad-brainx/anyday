@@ -5,13 +5,13 @@ class FacetForm extends HTMLFormElement {
     this.dirty = false;
     this.cachedMap = new Map();
 
-    this.addEventListener('change', this.onFormChange);
-    this.addEventListener('submit', this.onFormSubmit);
+    this.addEventListener("change", this.onFormChange);
+    this.addEventListener("submit", this.onFormSubmit);
   }
 
   onFormChange() {
     this.dirty = true;
-    this.dispatchEvent(new Event('submit', { cancelable: true }));
+    this.dispatchEvent(new Event("submit", { cancelable: true }));
   }
 
   onFormSubmit(event) {
@@ -26,61 +26,90 @@ class FacetForm extends HTMLFormElement {
     const searchParams = new URLSearchParams(new FormData(this));
     const url = new URL(this.action);
 
-    url.search = '';
+    url.search = "";
     searchParams.forEach((value, key) => url.searchParams.append(key, value));
 
-    ['page', 'filter.v.price.gte', 'filter.v.price.lte'].forEach((item) => {
-      if (url.searchParams.get(item) === '') {
+    ["page", "filter.v.price.gte", "filter.v.price.lte"].forEach((item) => {
+      if (url.searchParams.get(item) === "") {
         url.searchParams.delete(item);
       }
     });
 
-    url.searchParams.set('section_id', theme.utils.sectionId(this));
+    url.searchParams.set("section_id", theme.utils.sectionId(this));
     return url;
   }
 
   updateURLHash(url) {
     const clonedUrl = new URL(url);
-    clonedUrl.searchParams.delete('section_id');
-    history.replaceState({}, '', clonedUrl.toString());
+    clonedUrl.searchParams.delete("section_id");
+    history.replaceState({}, "", clonedUrl.toString());
   }
 
   beforeRenderSection() {
-    const container = document.getElementById('ProductGridContainer');
-    const items = container.querySelectorAll('.product-card');
+    const container = document.getElementById("ProductGridContainer");
+    const items = container.querySelectorAll(".product-card");
     const translateY = theme.config.motionReduced ? 0 : 50;
 
     Motion.timeline([
-      [items, { y: translateY, opacity: 0, visibility: 'hidden' }, { duration: 0.5, delay: theme.config.motionReduced ? 0 : Motion.stagger(0.1) }],
-      [container, { y: translateY, opacity: 0 }, { duration: 0.5, easing: 'linear' }],
+      [
+        items,
+        { y: translateY, opacity: 0, visibility: "hidden" },
+        {
+          duration: 0.5,
+          delay: theme.config.motionReduced ? 0 : Motion.stagger(0.1),
+        },
+      ],
+      [
+        container,
+        { y: translateY, opacity: 0 },
+        { duration: 0.5, easing: "linear" },
+      ],
     ]);
 
     setTimeout(() => {
-      const target = document.querySelector('.collection');
+      const target = document.querySelector(".collection");
       window.scrollTo({
-        top: target.getBoundingClientRect().top + window.scrollY - (theme.config.isTouch || theme.config.mqlSmall ? 95 : 20),
-        behavior: theme.config.motionReduced ? 'auto' : 'smooth'
+        top:
+          target.getBoundingClientRect().top +
+          window.scrollY -
+          (theme.config.isTouch || theme.config.mqlSmall ? 95 : 20),
+        behavior: theme.config.motionReduced ? "auto" : "smooth",
       });
 
-      const drawer = document.getElementById('FacetDrawer');
-      if (drawer) drawer.classList.add('loading');
+      const drawer = document.getElementById("FacetDrawer");
+      if (drawer) drawer.classList.add("loading");
     }, 100);
   }
 
   afterRenderSection() {
-    const container = document.getElementById('ProductGridContainer');
-    const items = container.querySelectorAll('.product-card');
+    const container = document.getElementById("ProductGridContainer");
+    const items = container.querySelectorAll(".product-card");
     const translateY = theme.config.motionReduced ? 0 : 50;
 
     Motion.timeline([
-      [container, { y: [translateY, 0], opacity: [0, 1] }, { duration: 0.5, easing: 'linear' }],
-      [items, { y: [translateY, 0], opacity: [0, 1], visibility: ['hidden', 'visible'] }, { duration: 0.5, delay: theme.config.motionReduced ? 0 : Motion.stagger(0.1) }],
+      [
+        container,
+        { y: [translateY, 0], opacity: [0, 1] },
+        { duration: 0.5, easing: "linear" },
+      ],
+      [
+        items,
+        {
+          y: [translateY, 0],
+          opacity: [0, 1],
+          visibility: ["hidden", "visible"],
+        },
+        {
+          duration: 0.5,
+          delay: theme.config.motionReduced ? 0 : Motion.stagger(0.1),
+        },
+      ],
     ]);
 
-    const drawer = document.getElementById('FacetDrawer');
-    if (drawer) drawer.classList.remove('loading');
+    const drawer = document.getElementById("FacetDrawer");
+    if (drawer) drawer.classList.remove("loading");
 
-    document.dispatchEvent(new CustomEvent('collection:reloaded'));
+    document.dispatchEvent(new CustomEvent("collection:reloaded"));
   }
 
   renderSection(url, event) {
@@ -88,7 +117,7 @@ class FacetForm extends HTMLFormElement {
       ? this.renderSectionFromCache(url, event)
       : this.renderSectionFromFetch(url, event);
 
-    if (this.hasAttribute('data-history')) this.updateURLHash(url);
+    if (this.hasAttribute("data-history")) this.updateURLHash(url);
 
     this.dirty = false;
   }
@@ -100,20 +129,25 @@ class FacetForm extends HTMLFormElement {
     fetch(url)
       .then((response) => response.text())
       .then((responseText) => {
-        const execution = (performance.now() - start);
+        const execution = performance.now() - start;
 
-        setTimeout(() => {
-          this.renderFilters(responseText, event);
-          this.renderFiltersActive(responseText);
-          this.renderProductGridContainer(responseText);
-          this.renderProductCount(responseText);
-          this.renderSortBy(responseText);
+        setTimeout(
+          () => {
+            this.renderFilters(responseText, event);
+            this.renderFiltersActive(responseText);
+            this.renderProductGridContainer(responseText);
+            this.renderProductCount(responseText);
+            this.renderSortBy(responseText);
 
-          theme.pubsub.publish(theme.pubsub.PUB_SUB_EVENTS.facetUpdate, { responseText: responseText });
-          this.cachedMap.set(url, responseText);
+            theme.pubsub.publish(theme.pubsub.PUB_SUB_EVENTS.facetUpdate, {
+              responseText: responseText,
+            });
+            this.cachedMap.set(url, responseText);
 
-          this.afterRenderSection();
-        }, execution > 500 ? 0 : 500);
+            this.afterRenderSection();
+          },
+          execution > 500 ? 0 : 500
+        );
       });
   }
 
@@ -128,31 +162,44 @@ class FacetForm extends HTMLFormElement {
       this.renderProductCount(responseText);
       this.renderSortBy(responseText);
 
-      theme.pubsub.publish(theme.pubsub.PUB_SUB_EVENTS.facetUpdate, { responseText: responseText });
+      theme.pubsub.publish(theme.pubsub.PUB_SUB_EVENTS.facetUpdate, {
+        responseText: responseText,
+      });
 
       this.afterRenderSection();
     }, 500);
   }
 
   renderFilters(responseText, event) {
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
     const facetElements = parsedHTML.querySelectorAll(
-      '#FacetFiltersContainer [data-filter], #MobileFacetFiltersContainer [data-filter]'
+      "#FacetFiltersContainer [data-filter], #MobileFacetFiltersContainer [data-filter]"
     );
 
     const matchesIndex = (element) => {
-      const jsFilter = event ? event.target.closest('[data-filter]') : undefined;
-      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false;
+      const jsFilter = event
+        ? event.target.closest("[data-filter]")
+        : undefined;
+      return jsFilter
+        ? element.dataset.index === jsFilter.dataset.index
+        : false;
     };
-    const facetsToRender = Array.from(facetElements).filter((element) => !matchesIndex(element));
+    const facetsToRender = Array.from(facetElements).filter(
+      (element) => !matchesIndex(element)
+    );
 
     facetsToRender.forEach((element) => {
-      const filter = document.querySelector(`[data-filter][data-index="${element.dataset.index}"]`);
+      const filter = document.querySelector(
+        `[data-filter][data-index="${element.dataset.index}"]`
+      );
       if (filter !== null) {
-        if (filter.tagName === 'DETAILS') {
-          filter.querySelector('summary + *').innerHTML = element.querySelector('summary + *').innerHTML;
-        }
-        else {
+        if (filter.tagName === "DETAILS") {
+          filter.querySelector("summary + *").innerHTML =
+            element.querySelector("summary + *").innerHTML;
+        } else {
           filter.innerHTML = element.innerHTML;
         }
       }
@@ -160,39 +207,55 @@ class FacetForm extends HTMLFormElement {
   }
 
   renderFiltersActive(responseText) {
-    const id = 'FacetFiltersActive';
+    const id = "FacetFiltersActive";
     if (document.getElementById(id) === null) return;
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
 
-    document.getElementById(id).innerHTML = parsedHTML.getElementById(id).innerHTML;
+    document.getElementById(id).innerHTML =
+      parsedHTML.getElementById(id).innerHTML;
   }
 
   renderProductGridContainer(responseText) {
-    const id = 'ProductGridContainer';
+    const id = "ProductGridContainer";
     if (document.getElementById(id) === null) return;
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
-    parsedHTML.querySelector('motion-list').setAttribute('motion-reduced', '');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
+    parsedHTML.querySelector("motion-list").setAttribute("motion-reduced", "");
 
-    document.getElementById(id).innerHTML = parsedHTML.getElementById(id).innerHTML;
+    document.getElementById(id).innerHTML =
+      parsedHTML.getElementById(id).innerHTML;
   }
 
   renderProductCount(responseText) {
-    const id = 'ProductCount';
+    const id = "ProductCount";
     if (document.getElementById(id) === null) return;
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
 
-    document.getElementById(id).innerHTML = parsedHTML.getElementById(id).innerHTML;
+    document.getElementById(id).innerHTML =
+      parsedHTML.getElementById(id).innerHTML;
   }
 
   renderSortBy(responseText) {
-    const id = 'SortByContainer';
+    const id = "SortByContainer";
     if (document.getElementById(id) === null) return;
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
 
-    document.getElementById(id).innerHTML = parsedHTML.getElementById(id).innerHTML;
+    document.getElementById(id).innerHTML =
+      parsedHTML.getElementById(id).innerHTML;
   }
 }
-customElements.define('facet-form', FacetForm, { extends: 'form' });
+customElements.define("facet-form", FacetForm, { extends: "form" });
 
 class FacetCount extends HTMLElement {
   constructor() {
@@ -202,7 +265,10 @@ class FacetCount extends HTMLElement {
   facetUpdateUnsubscriber = undefined;
 
   connectedCallback() {
-    this.facetUpdateUnsubscriber = theme.pubsub.subscribe(theme.pubsub.PUB_SUB_EVENTS.facetUpdate, this.onFacetUpdate.bind(this));
+    this.facetUpdateUnsubscriber = theme.pubsub.subscribe(
+      theme.pubsub.PUB_SUB_EVENTS.facetUpdate,
+      this.onFacetUpdate.bind(this)
+    );
   }
 
   disconnectedCallback() {
@@ -216,82 +282,94 @@ class FacetCount extends HTMLElement {
   }
 
   onFacetUpdate(event) {
-    const parsedHTML = new DOMParser().parseFromString(event.responseText, 'text/html');
-    const facetCount = parsedHTML.querySelector('facet-count');
+    const parsedHTML = new DOMParser().parseFromString(
+      event.responseText,
+      "text/html"
+    );
+    const facetCount = parsedHTML.querySelector("facet-count");
     this.innerText = facetCount.innerHTML;
     this.hidden = this.itemCount === 0;
   }
 }
-customElements.define('facet-count', FacetCount);
+customElements.define("facet-count", FacetCount);
 
 class FacetRemove extends MagnetLink {
   constructor() {
     super();
 
-    this.addEventListener('click', this.onClick);
+    this.addEventListener("click", this.onClick);
   }
 
   onClick(event) {
-    const form = this.closest('form[is="facet-form"]') || document.querySelector('form[is="facet-form"]');
+    const form =
+      this.closest('form[is="facet-form"]') ||
+      document.querySelector('form[is="facet-form"]');
 
     if (form) {
       event.preventDefault();
 
       const url = new URL(this.href);
-      url.searchParams.set('section_id', theme.utils.sectionId(form));
+      url.searchParams.set("section_id", theme.utils.sectionId(form));
       form.renderSection(url.toString(), event);
     }
   }
 }
-customElements.define('facet-remove', FacetRemove, { extends: 'a' });
+customElements.define("facet-remove", FacetRemove, { extends: "a" });
 
 class FacetSort extends HTMLElement {
   constructor() {
     super();
 
-    Motion.inView(this, this.init.bind(this), { margin: '200px 0px 200px 0px' });
+    Motion.inView(this, this.init.bind(this), {
+      margin: "200px 0px 200px 0px",
+    });
 
-    this.addEventListener('change', this.onChange);
-    this.button.addEventListener('click', this.show.bind(this));
-    this.close.addEventListener('click', this.hide.bind(this));
-    document.addEventListener('click', this.onWindowClick.bind(this));
+    this.addEventListener("change", this.onChange);
+    this.button.addEventListener("click", this.show.bind(this));
+    this.close.addEventListener("click", this.hide.bind(this));
+    document.addEventListener("click", this.onWindowClick.bind(this));
   }
 
   get listbox() {
-    return this.querySelector('.sort-listbox');
+    return this.querySelector(".sort-listbox");
   }
 
   get selection() {
-    return this.querySelector('.sort-selection');
+    return this.querySelector(".sort-selection");
   }
 
   get button() {
-    return this.querySelector('.sort-by');
+    return this.querySelector(".sort-by");
   }
 
   get close() {
-    return this.querySelector('.sort-close');
+    return this.querySelector(".sort-close");
   }
 
   init() {
     this.initButton();
-    this.style.setProperty('--facet-listbox-height', `${this.listbox.getBoundingClientRect().height}px`);
+    this.style.setProperty(
+      "--facet-listbox-height",
+      `${this.listbox.getBoundingClientRect().height}px`
+    );
   }
 
   initButton() {
     const value = this.selection.innerText;
     const width = theme.getElementWidth(this.selection, value);
-    this.style.setProperty('--facet-button-width', `${width}px`);
+    this.style.setProperty("--facet-button-width", `${width}px`);
   }
 
   onChange(event) {
-    const form = this.closest('form[is="facet-form"]') || document.querySelector('form[is="facet-form"]');
+    const form =
+      this.closest('form[is="facet-form"]') ||
+      document.querySelector('form[is="facet-form"]');
 
     if (form) {
       const url = new URL(window.location.href);
-      url.searchParams.set('sort_by', event.target.value);
-      url.searchParams.set('section_id', theme.utils.sectionId(form));
-      url.searchParams.delete('page');
+      url.searchParams.set("sort_by", event.target.value);
+      url.searchParams.set("section_id", theme.utils.sectionId(form));
+      url.searchParams.delete("page");
       form.renderSection(url.toString(), event);
     }
 
@@ -301,53 +379,78 @@ class FacetSort extends HTMLElement {
   }
 
   show() {
-    this.button.setAttribute('open', '');
+    this.button.setAttribute("open", "");
   }
 
   hide(immediate = true) {
-    if (this.button.hasAttribute('open')) {
+    if (this.button.hasAttribute("open")) {
       setTimeout(() => {
-        this.button.removeAttribute('open');
+        this.button.removeAttribute("open");
       }, 100);
 
-      if (theme.config.isTouch || document.body.getAttribute('data-button_hover') === 'none') return;
-      
-      const btnFill = this.button.querySelector('[data-fill');
-      Motion.animate(btnFill, { y: ['0%', immediate ? '0%' : '-76%'] }, { duration: 0.6, delay: immediate ? 0 : 0.2 });
+      if (
+        theme.config.isTouch ||
+        document.body.getAttribute("data-button_hover") === "none"
+      )
+        return;
+
+      const btnFill = this.button.querySelector("[data-fill");
+      Motion.animate(
+        btnFill,
+        { y: ["0%", immediate ? "0%" : "-76%"] },
+        { duration: 0.6, delay: immediate ? 0 : 0.2 }
+      );
     }
   }
 
   onWindowClick(event) {
     if (!this.contains(event.target)) {
-      if (this.button.hasAttribute('open')) {
+      if (this.button.hasAttribute("open")) {
         this.hide(false);
       }
     }
   }
 }
-customElements.define('facet-sort', FacetSort);
+customElements.define("facet-sort", FacetSort);
 
 class FacetSticky extends HTMLElement {
   constructor() {
     super();
 
-    new IntersectionObserver(this.handleIntersection.bind(this), { rootMargin: `-${screen.availHeight - 100}px 0px ${screen.availHeight}px 0px` }).observe(document.querySelector('.collection-section'));
+    new IntersectionObserver(this.handleIntersection.bind(this), {
+      rootMargin: `-${screen.availHeight - 100}px 0px ${screen.availHeight}px 0px`,
+    }).observe(document.querySelector(".collection-section"));
   }
 
   get button() {
-    return this.querySelector('.button');
+    return this.querySelector(".button");
   }
 
   handleIntersection(entries) {
     if (entries[0].isIntersecting) {
-      Motion.animate(this.button, { opacity: 1, visibility: 'visible', transform: ['translateY(15px)', 'translateY(0)'] }, { duration: 1, easing: [0.16, 1, 0.3, 1] });
-    }
-    else {
-      Motion.animate(this.button, { opacity: 0, visibility: 'hidden', transform: ['translateY(0)', 'translateY(15px)'] }, { duration: 1, easing: [0.16, 1, 0.3, 1] });
+      Motion.animate(
+        this.button,
+        {
+          opacity: 1,
+          visibility: "visible",
+          transform: ["translateY(15px)", "translateY(0)"],
+        },
+        { duration: 1, easing: [0.16, 1, 0.3, 1] }
+      );
+    } else {
+      Motion.animate(
+        this.button,
+        {
+          opacity: 0,
+          visibility: "hidden",
+          transform: ["translateY(0)", "translateY(15px)"],
+        },
+        { duration: 1, easing: [0.16, 1, 0.3, 1] }
+      );
     }
   }
 }
-customElements.define('facet-sticky', FacetSticky);
+customElements.define("facet-sticky", FacetSticky);
 
 class PriceRange extends HTMLElement {
   constructor() {
@@ -358,56 +461,86 @@ class PriceRange extends HTMLElement {
     this.inputMin = this.querySelector('input[name="filter.v.price.gte"]');
     this.inputMax = this.querySelector('input[name="filter.v.price.lte"]');
 
-    this.inputMin.addEventListener('focus', this.inputMin.select);
-    this.inputMax.addEventListener('focus', this.inputMax.select);
-    this.inputMin.addEventListener('change', this.onInputMinChange.bind(this));
-    this.inputMax.addEventListener('change', this.onInputMaxChange.bind(this));
+    this.inputMin.addEventListener("focus", this.inputMin.select);
+    this.inputMax.addEventListener("focus", this.inputMax.select);
+    this.inputMin.addEventListener("change", this.onInputMinChange.bind(this));
+    this.inputMax.addEventListener("change", this.onInputMaxChange.bind(this));
 
-    this.rangeMin.addEventListener('change', this.onRangeMinChange.bind(this));
-    this.rangeMax.addEventListener('change', this.onRangeMaxChange.bind(this));
-    this.rangeMin.addEventListener('input', this.onRangeMinInput.bind(this));
-    this.rangeMax.addEventListener('input', this.onRangeMaxInput.bind(this));
+    this.rangeMin.addEventListener("change", this.onRangeMinChange.bind(this));
+    this.rangeMax.addEventListener("change", this.onRangeMaxChange.bind(this));
+    this.rangeMin.addEventListener("input", this.onRangeMinInput.bind(this));
+    this.rangeMax.addEventListener("input", this.onRangeMaxInput.bind(this));
   }
 
   onInputMinChange(event) {
     event.preventDefault();
-    event.target.value = Math.max(Math.min(parseInt(event.target.value), parseInt(this.inputMax.value || event.target.max) - 1), event.target.min);
+    event.target.value = Math.max(
+      Math.min(
+        parseInt(event.target.value),
+        parseInt(this.inputMax.value || event.target.max) - 1
+      ),
+      event.target.min
+    );
     this.rangeMin.value = event.target.value;
-    this.rangeMin.parentElement.style.setProperty('--range-min', `${parseInt(this.rangeMin.value) / parseInt(this.rangeMin.max) * 100}%`);
+    this.rangeMin.parentElement.style.setProperty(
+      "--range-min",
+      `${(parseInt(this.rangeMin.value) / parseInt(this.rangeMin.max)) * 100}%`
+    );
   }
 
   onInputMaxChange(event) {
     event.preventDefault();
-    event.target.value = Math.min(Math.max(parseInt(event.target.value), parseInt(this.inputMin.value || event.target.min) + 1), event.target.max);
+    event.target.value = Math.min(
+      Math.max(
+        parseInt(event.target.value),
+        parseInt(this.inputMin.value || event.target.min) + 1
+      ),
+      event.target.max
+    );
     this.rangeMax.value = event.target.value;
-    this.rangeMax.parentElement.style.setProperty('--range-max', `${parseInt(this.rangeMax.value) / parseInt(this.rangeMax.max) * 100}%`);
+    this.rangeMax.parentElement.style.setProperty(
+      "--range-max",
+      `${(parseInt(this.rangeMax.value) / parseInt(this.rangeMax.max)) * 100}%`
+    );
   }
 
   onRangeMinChange(event) {
     event.stopPropagation();
     this.inputMin.value = event.target.value;
-    this.inputMin.dispatchEvent(new Event('change', { bubbles: true }));
+    this.inputMin.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   onRangeMaxChange(event) {
     event.stopPropagation();
     this.inputMax.value = event.target.value;
-    this.inputMax.dispatchEvent(new Event('change', { bubbles: true }));
+    this.inputMax.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   onRangeMinInput(event) {
-    event.target.value = Math.min(parseInt(event.target.value), parseInt(this.inputMax.value || event.target.max) - 1);
-    event.target.parentElement.style.setProperty('--range-min', `${parseInt(event.target.value) / parseInt(event.target.max) * 100}%`);
+    event.target.value = Math.min(
+      parseInt(event.target.value),
+      parseInt(this.inputMax.value || event.target.max) - 1
+    );
+    event.target.parentElement.style.setProperty(
+      "--range-min",
+      `${(parseInt(event.target.value) / parseInt(event.target.max)) * 100}%`
+    );
     this.inputMin.value = event.target.value;
   }
 
   onRangeMaxInput(event) {
-    event.target.value = Math.max(parseInt(event.target.value), parseInt(this.inputMin.value || event.target.min) + 1);
-    event.target.parentElement.style.setProperty('--range-max', `${parseInt(event.target.value) / parseInt(event.target.max) * 100}%`);
+    event.target.value = Math.max(
+      parseInt(event.target.value),
+      parseInt(this.inputMin.value || event.target.min) + 1
+    );
+    event.target.parentElement.style.setProperty(
+      "--range-max",
+      `${(parseInt(event.target.value) / parseInt(event.target.max)) * 100}%`
+    );
     this.inputMax.value = event.target.value;
   }
 }
-customElements.define('price-range', PriceRange);
+customElements.define("price-range", PriceRange);
 
 class InfiniteButton extends HoverButton {
   constructor() {
@@ -417,23 +550,24 @@ class InfiniteButton extends HoverButton {
   }
 
   connectedCallback() {
-    this.addEventListener('click', this.onClickHandler);
+    this.addEventListener("click", this.onClickHandler);
 
-    if (this.getAttribute('mode') == 'infinite') {
-      Motion.inView(this, this.onClickHandler, { margin: '200px 0px 200px 0px' });
+    if (this.getAttribute("mode") == "infinite") {
+      Motion.inView(this, this.onClickHandler, {
+        margin: "200px 0px 200px 0px",
+      });
     }
   }
 
   disconnectedCallback() {
-    this.removeEventListener('click', this.onClickHandler);
+    this.removeEventListener("click", this.onClickHandler);
   }
 
   onClick() {
-    if (this.hasAttribute('aria-busy')) return;
+    if (this.hasAttribute("aria-busy")) return;
     this.enableLoading();
 
     const url = this.buildUrl().toString();
-
     fetch(url)
       .then((response) => response.text())
       .then((responseText) => {
@@ -443,47 +577,56 @@ class InfiniteButton extends HoverButton {
   }
 
   renderPagination(responseText) {
-    const productGridContainer = document.getElementById('ProductGridContainer');
+    const productGridContainer = document.getElementById(
+      "ProductGridContainer"
+    );
     if (productGridContainer === null) return;
 
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
-    const destination = productGridContainer.querySelector('.pagination');
-    const source = parsedHTML.querySelector('.pagination');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
+    const destination = productGridContainer.querySelector(".pagination");
+    const source = parsedHTML.querySelector(".pagination");
 
     if (source) {
       destination.innerHTML = source.innerHTML;
-    }
-    else {
+    } else {
       destination.remove();
     }
   }
 
   renderProductGridContainer(responseText) {
-    const productGridContainer = document.getElementById('ProductGridContainer');
+    const productGridContainer = document.getElementById(
+      "ProductGridContainer"
+    );
     if (productGridContainer === null) return;
 
-    const parsedHTML = new DOMParser().parseFromString(responseText, 'text/html');
-    const destination = productGridContainer.querySelector('motion-list');
-    const source = parsedHTML.querySelector('motion-list');
+    const parsedHTML = new DOMParser().parseFromString(
+      responseText,
+      "text/html"
+    );
+    const destination = productGridContainer.querySelector("motion-list");
+    const source = parsedHTML.querySelector("motion-list");
 
     if (source && destination) {
-      source.querySelectorAll('.card').forEach((item) => {
+      source.querySelectorAll(".card").forEach((item) => {
         destination.appendChild(item);
       });
 
       destination.reload();
     }
   }
-  
+
   buildUrl() {
-    const url = new URL(this.getAttribute('action'));
-    url.searchParams.set('section_id', theme.utils.sectionId(this));
+    const url = new URL(this.getAttribute("action"));
+    url.searchParams.set("section_id", theme.utils.sectionId(this));
     return url;
   }
 
   enableLoading() {
-    this.classList.add('pointer-events-none');
-    this.setAttribute('aria-busy', 'true');
+    this.classList.add("pointer-events-none");
+    this.setAttribute("aria-busy", "true");
   }
 }
-customElements.define('infinite-button', InfiniteButton, { extends: 'button' });
+customElements.define("infinite-button", InfiniteButton, { extends: "button" });
