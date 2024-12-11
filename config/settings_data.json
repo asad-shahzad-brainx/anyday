@@ -9,6 +9,7 @@
  */
 {
   "current": {
+    "image_play_icon": "shopify://shop_images/Play_icon_white_with-circle.png",
     "logo": "shopify://shop_images/Anyday_Logo.svg",
     "white_logo": "shopify://shop_images/Anyday_Logo_-_White.svg",
     "logo_width": 170,
