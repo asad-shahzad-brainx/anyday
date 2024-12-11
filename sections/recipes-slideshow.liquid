@@ -10,7 +10,10 @@
 
 {%- assign ingredient_tag = product.metafields.recipes_slider.tag_for_recipes_slider | handleize -%}
 {% comment %} updated tag {% endcomment %}
-{% assign ingredient_tag_new = product.metafields.custom.recipe_tag.value.tag.value | handleize %}
+{% assign ingredient_tag = product.metafields.accentuate['recipe_slider_tag'].value.tag.value | handleize %}
+{% if ingredient_tag == blank %}
+  {%- assign ingredient_tag = product.metafields.recipes_slider.tag_for_recipes_slider | handleize -%}
+{% endif %}
 
 {%- assign padding_top_desk = section.settings.padding_top_desk -%}
 {%- assign padding_bottom_desk = section.settings.padding_bottom_desk -%}

@@ -166,7 +166,7 @@
                         data-id="{{ video_url }}" >
                   {% render 'video-icon' %}
                 </button>
-    
+
                 <div class="video-details">
                   {%- if type == 'youtube' -%}
                     {%- if video_title != blank -%}
@@ -182,7 +182,7 @@
                         {% comment %} {% render 'icon-spinner' %} {% endcomment %}
                       </span>
                     {%- endif -%}
-    
+
                   {%- else -%}
                     <span id="video-title" class="video-title"> {{ video_title }} </span>
                   {%- endif -%}
@@ -209,7 +209,7 @@
       </div>
     </div>
 
-    {%- if media_count > 1 and is_recipe == false -%}
+    {%- if media_count > 1 -%}
       {%- if gallery_layout != 'dots' -%}
         <scroll-shadow class="product__thumbnails{% unless mobile_thumbnail %} with-dots{% endunless %}{% if gallery_layout == 'scroll' or gallery_layout == 'columns' %} lg:hidden{% endif %} product__thumbnails--{{ thumbnail_position }} grid items-center relative w-full">
         {%- endif -%}

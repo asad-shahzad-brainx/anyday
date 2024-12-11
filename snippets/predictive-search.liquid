@@ -1,6 +1,6 @@
 <form class="search__form flex flex-col gap-8 h-full relative" action="{{ routes.search_url }}" method="GET" role="search"
   {%- if settings.predictive_search_enabled %}
-    is="predictive-search"
+    is="predictive-search" 
     data-section-id="{{ section_id }}"
     data-limit="{{ settings.predictive_search_limit }}"
   {% endif -%}
